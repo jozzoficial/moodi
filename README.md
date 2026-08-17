@@ -1,4 +1,4 @@
-# Moodi
+# Mood¡
 
 Uma aplicação Flutter inteligente que analisa emoções através de IA.
 
