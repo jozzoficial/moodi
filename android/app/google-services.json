@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "777626255432",
+    "project_id": "moodi-flutter",
+    "storage_bucket": "moodi-flutter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:777626255432:android:7c2d50054970a7d563587d",
+        "android_client_info": {
+          "package_name": "com.example.moodi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSnMDMVlSdf2xG_0Z-haveuM6xE_pVK9E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

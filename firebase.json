@@ -1,0 +1,25 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "moodi-flutter",
+          "appId": "1:777626255432:android:7c2d50054970a7d563587d",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "moodi-flutter",
+          "configurations": {
+            "android": "1:777626255432:android:7c2d50054970a7d563587d",
+            "ios": "1:777626255432:ios:11c96022f8d285b463587d",
+            "macos": "1:777626255432:ios:11c96022f8d285b463587d",
+            "web": "1:777626255432:web:314e001dd097f0e063587d",
+            "windows": "1:777626255432:web:6898df21f6605a9e63587d"
+          }
+        }
+      }
+    }
+  }
+}
