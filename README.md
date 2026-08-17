@@ -13,7 +13,7 @@ Uma aplicação Flutter inteligente que analisa emoções através de IA.
 
 1. Clone o repositório e aceda à pasta do projeto:
 ```bash
-git clone <url-do-repositorio>
+git https://github.com/jozzoficial/moodi.git
 cd moodi
 ```
 
@@ -49,6 +49,6 @@ flutter run -d chrome
 * `lib/componentes/` - Widgets partilhados (temas, botões, etc).
 
 ## Funcionalidades Principais
-- **Análise de Expressões**: Usa o modelo `gemini-2.5-flash` para interpretar o estado de humor a partir de imagens.
+- **Análise de Expressões**: Usa o modelo `gemini-3.6-flash` para interpretar o estado de humor a partir de imagens.
 - **Autenticação Segura**: Suporte garantido via Firebase Auth.
 - **App Check**: Implementado para proteger o tráfego da API e evitar abusos.
