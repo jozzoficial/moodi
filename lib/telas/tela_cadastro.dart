@@ -19,11 +19,19 @@ class _TelaCadastroState extends State<TelaCadastro> {
   final _codinomeCtrl = TextEditingController();
 
   void _registrar() async {
+    final codinome = _codinomeCtrl.text.trim();
+    if (codinome.length < 3) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('O codinome deve ter pelo menos 3 caracteres.')),
+      );
+      return;
+    }
+
     final auth = Provider.of<ControladorAuth>(context, listen: false);
     bool sucesso = await auth.registrar(
       _emailCtrl.text,
       _senhaCtrl.text,
-      _codinomeCtrl.text.isEmpty ? 'Anônimo' : _codinomeCtrl.text,
+      codinome,
     );
 
     if (!mounted) return;

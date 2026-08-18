@@ -27,7 +27,7 @@ class BarraNavegacao extends StatelessWidget {
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -44,16 +44,22 @@ class BarraNavegacao extends StatelessWidget {
                 aoPressionar: () => aoMudarAba(1),
               ),
               _ItemNavegacao(
-                icone: Icons.bar_chart,
-                rotulo: 'Insights',
+                icone: Icons.forum,
+                rotulo: 'Comunidade',
                 ativo: indiceAtual == 2,
                 aoPressionar: () => aoMudarAba(2),
               ),
               _ItemNavegacao(
-                icone: Icons.forum,
-                rotulo: 'Chat',
+                icone: Icons.chat_bubble,
+                rotulo: 'Mensagens',
                 ativo: indiceAtual == 3,
                 aoPressionar: () => aoMudarAba(3),
+              ),
+              _ItemNavegacao(
+                icone: Icons.person,
+                rotulo: 'Perfil',
+                ativo: indiceAtual == 4,
+                aoPressionar: () => aoMudarAba(4),
               ),
             ],
           ),
@@ -83,7 +89,7 @@ class _ItemNavegacao extends StatelessWidget {
       borderRadius: BorderRadius.circular(24),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: ativo ? TemaMoodi.primarioContainer.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(24),
@@ -94,12 +100,13 @@ class _ItemNavegacao extends StatelessWidget {
             Icon(
               icone,
               color: ativo ? TemaMoodi.primarioContainer : Colors.grey.shade400,
+              size: 22,
             ),
             const SizedBox(height: 4),
             Text(
               rotulo,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: ativo ? TemaMoodi.primarioContainer : Colors.grey.shade400,
               ),

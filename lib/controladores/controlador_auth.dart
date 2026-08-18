@@ -10,10 +10,12 @@ class ControladorAuth extends ChangeNotifier {
 
   Utilizador? _utilizadorAtual;
   bool _carregando = false;
+  bool _precisaCodinome = false;
   StreamSubscription? _authSubscription;
 
   Utilizador? get utilizadorAtual => _utilizadorAtual;
   bool get carregando => _carregando;
+  bool get precisaCodinome => _precisaCodinome;
 
   ControladorAuth() {
     _inicializar();
@@ -27,18 +29,21 @@ class ControladorAuth extends ChangeNotifier {
             await _servicoBancoDados.obterUtilizador(user.uid);
         if (utilizadorFirestore != null) {
           _utilizadorAtual = utilizadorFirestore;
+          _precisaCodinome = false;
         } else {
           // Fallback: cria utilizador a partir dos dados do Firebase Auth
           _utilizadorAtual = Utilizador(
             id: user.uid,
             codinome: user.displayName ?? 'Anônimo',
             email: user.email ?? '',
+            dataCriacao: DateTime.now(),
           );
           // Salva no Firestore para futuras consultas
           await _servicoBancoDados.salvarUtilizador(_utilizadorAtual!);
         }
       } else {
         _utilizadorAtual = null;
+        _precisaCodinome = false;
       }
       notifyListeners();
     });
@@ -50,8 +55,14 @@ class ControladorAuth extends ChangeNotifier {
       Utilizador? novoUtilizador =
           await _servicoAuth.registrarComEmailSenha(email, senha, codinome);
       if (novoUtilizador != null) {
-        await _servicoBancoDados.salvarUtilizador(novoUtilizador);
-        _utilizadorAtual = novoUtilizador;
+        final utilizadorCompleto = Utilizador(
+          id: novoUtilizador.id,
+          codinome: codinome,
+          email: email,
+          dataCriacao: DateTime.now(),
+        );
+        await _servicoBancoDados.salvarUtilizador(utilizadorCompleto);
+        _utilizadorAtual = utilizadorCompleto;
         _setCarregando(false);
         return true;
       }
@@ -90,11 +101,20 @@ class ControladorAuth extends ChangeNotifier {
             await _servicoBancoDados.obterUtilizador(utilizador.id);
             
         if (utilizadorFirestore == null) {
-          // Se for a primeira vez, salva no Firestore
-          await _servicoBancoDados.salvarUtilizador(utilizador);
+          // Primeira vez — precisa escolher codinome
+          _utilizadorAtual = Utilizador(
+            id: utilizador.id,
+            codinome: utilizador.codinome,
+            email: utilizador.email,
+            dataCriacao: DateTime.now(),
+          );
+          await _servicoBancoDados.salvarUtilizador(_utilizadorAtual!);
+          _precisaCodinome = true;
+        } else {
+          _utilizadorAtual = utilizadorFirestore;
+          _precisaCodinome = false;
         }
         
-        _utilizadorAtual = utilizadorFirestore ?? utilizador;
         _setCarregando(false);
         return true;
       }
@@ -105,9 +125,29 @@ class ControladorAuth extends ChangeNotifier {
     return false;
   }
 
+  Future<void> atualizarPerfil({String? codinome, String? bio}) async {
+    if (_utilizadorAtual == null) return;
+    
+    final dados = <String, dynamic>{};
+    if (codinome != null) dados['codinome'] = codinome;
+    if (bio != null) dados['bio'] = bio;
+    
+    if (dados.isEmpty) return;
+
+    await _servicoBancoDados.atualizarUtilizador(_utilizadorAtual!.id, dados);
+    
+    _utilizadorAtual = _utilizadorAtual!.copiarCom(
+      codinome: codinome,
+      bio: bio,
+    );
+    _precisaCodinome = false;
+    notifyListeners();
+  }
+
   Future<void> sair() async {
     await _servicoAuth.sair();
     _utilizadorAtual = null;
+    _precisaCodinome = false;
     notifyListeners();
   }
 

@@ -69,47 +69,224 @@ class _TelaCapturaSelfieState extends State<TelaCapturaSelfie> {
       
       if (!mounted) return;
       
-      // 2. Regista o humor se encontrou algo
+      setState(() => _analisando = false);
+      
+      // 2. Mostra dialog de confirmação
       if (humorDetetado != null) {
-        final auth = context.read<ControladorAuth>();
-        if (auth.utilizadorAtual != null) {
-          await context.read<ControladorHumor>().registrarHumor(
-            auth.utilizadorAtual!.id,
-            humorDetetado,
-            null, // A foto não é guardada, apenas o humor
-          );
-          
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Humor detetado: $humorDetetado! Registrado com sucesso.')),
-            );
-            Navigator.pop(context); // Volta ao Dashboard
-          }
-        }
+        _mostrarDialogConfirmacao(humorDetetado);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Não foi possível detetar o humor. Tente novamente.')),
-        );
-        setState(() => _analisando = false);
+        _mostrarDialogConfirmacao('Neutro');
       }
     } catch (e) {
       if (!mounted) return;
       setState(() => _analisando = false);
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Erro na IA'),
-          content: SingleChildScrollView(
-            child: Text(e.toString()),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('OK'),
+      
+      // Em caso de erro, oferece escolha manual
+      _mostrarDialogErro(e.toString());
+    }
+  }
+
+  void _mostrarDialogConfirmacao(String humorDetetado) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Row(
+          children: [
+            Icon(Icons.psychology, color: TemaMoodi.primarioContainer),
+            SizedBox(width: 8),
+            Text('Humor Detetado'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: TemaMoodi.primarioContainer.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                humorDetetado,
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: TemaMoodi.primarioContainer,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'A IA detetou este humor.\nDeseja confirmar ou escolher manualmente?',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: TemaMoodi.contorno),
             ),
           ],
         ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                _fotoTirada = null;
+                _fotoBytes = null;
+              });
+            },
+            child: const Text('Repetir Foto'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _mostrarSelectorManual();
+            },
+            child: const Text('Escolher Manualmente'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _registrarHumor(humorDetetado);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: TemaMoodi.primarioContainer,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Confirmar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _mostrarDialogErro(String erro) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Row(
+          children: [
+            Icon(Icons.error_outline, color: Colors.redAccent),
+            SizedBox(width: 8),
+            Text('Erro na IA'),
+          ],
+        ),
+        content: const Text(
+          'Não foi possível analisar a foto.\nDeseja escolher o humor manualmente?',
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                _fotoTirada = null;
+                _fotoBytes = null;
+              });
+            },
+            child: const Text('Tentar Novamente'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _mostrarSelectorManual();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: TemaMoodi.primarioContainer,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Escolher Manualmente'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _mostrarSelectorManual() {
+    const humores = [
+      {'humor': 'Feliz', 'icone': Icons.sentiment_very_satisfied, 'cor': Colors.orange},
+      {'humor': 'Calmo', 'icone': Icons.self_improvement, 'cor': Colors.teal},
+      {'humor': 'Neutro', 'icone': Icons.sentiment_neutral, 'cor': Colors.grey},
+      {'humor': 'Ansioso', 'icone': Icons.psychology, 'cor': Colors.purple},
+      {'humor': 'Triste', 'icone': Icons.sentiment_dissatisfied, 'cor': Colors.blue},
+      {'humor': 'Raivoso', 'icone': Icons.local_fire_department, 'cor': Colors.red},
+    ];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text('Escolha o seu Humor'),
+        content: Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          alignment: WrapAlignment.center,
+          children: humores.map((h) {
+            return InkWell(
+              onTap: () {
+                Navigator.pop(ctx);
+                _registrarHumor(h['humor'] as String);
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                width: 90,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: (h['cor'] as Color).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                      color: (h['cor'] as Color).withValues(alpha: 0.3)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(h['icone'] as IconData,
+                        color: h['cor'] as Color, size: 28),
+                    const SizedBox(height: 6),
+                    Text(
+                      h['humor'] as String,
+                      style: TextStyle(
+                        color: h['cor'] as Color,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  void _registrarHumor(String humor) async {
+    final auth = context.read<ControladorAuth>();
+    if (auth.utilizadorAtual != null) {
+      final sucesso = await context.read<ControladorHumor>().registrarHumor(
+        auth.utilizadorAtual!.id,
+        humor,
+        null,
       );
+      
+      if (mounted) {
+        if (sucesso) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Humor registrado: $humor! 🎉')),
+          );
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Já registou o seu humor hoje!')),
+          );
+          Navigator.pop(context);
+        }
+      }
     }
   }
 

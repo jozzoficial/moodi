@@ -9,8 +9,11 @@ import 'componentes/tema.dart';
 import 'controladores/controlador_auth.dart';
 import 'controladores/controlador_humor.dart';
 import 'controladores/controlador_chat.dart';
+import 'controladores/controlador_comunidade.dart';
+import 'controladores/controlador_mensagens_privadas.dart';
 import 'telas/tela_login.dart';
 import 'telas/tela_dashboard.dart';
+import 'telas/tela_escolher_codinome.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,6 +49,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ControladorAuth()),
         ChangeNotifierProvider(create: (_) => ControladorHumor()),
         ChangeNotifierProvider(create: (_) => ControladorChat()),
+        ChangeNotifierProvider(create: (_) => ControladorComunidade()),
+        ChangeNotifierProvider(create: (_) => ControladorMensagensPrivadas()),
       ],
       child: const MoodiApp(),
     ),
@@ -80,6 +85,10 @@ class WrapperAutenticacao extends StatelessWidget {
 
     // Direciona para Dashboard se autenticado, senão Login
     if (auth.utilizadorAtual != null) {
+      // Se precisa escolher codinome (Google Sign-In pela primeira vez)
+      if (auth.precisaCodinome) {
+        return const TelaEscolherCodinome();
+      }
       return const TelaDashboard();
     } else {
       return const TelaLogin();
